@@ -1,7 +1,7 @@
 # QA Lead — Test Plan
 
 **Agent**: qa-lead  
-**Generated**: 2026-08-06T09:59:32.263Z
+**Generated**: 2026-08-06T10:02:40.675Z
 
 ---
 
@@ -106,42 +106,42 @@
   ],
   "e2e": [
     {
-      "scenario": "Launch game, start new session, play through level 1, pause, resume, complete level, and view level‑complete screen.",
+      "scenario": "Launch game, start new session, play through level 1, pause, resume, complete level, and view level‑complete screen",
       "description": "Covers start screen navigation, input handling, game loop execution, pause overlay, level progression, and HUD updates.",
       "criticalPath": true,
       "storyId": "N/A",
       "acIndex": -1
     },
     {
-      "scenario": "Trigger game‑over by losing all lives and verify game‑over screen displays correct score and high‑score entry form.",
+      "scenario": "Trigger game‑over by losing all lives and verify game‑over screen displays correct score and high‑score entry form",
       "description": "Ensures life decrement logic, game‑over transition, and UI rendering of final score.",
       "criticalPath": true,
       "storyId": "N/A",
       "acIndex": -1
     },
     {
-      "scenario": "Submit a new high score, then reload page to confirm persistence and correct ordering of top‑10 list.",
+      "scenario": "Submit a new high score, then reload page to confirm persistence and correct ordering of top‑10 list",
       "description": "Validates HighScoreStore CRUD, IndexedDB persistence, and UI list rendering.",
       "criticalPath": true,
       "storyId": "N/A",
       "acIndex": -1
     },
     {
-      "scenario": "Toggle mute and color‑blind mode via UI controls and verify audio is silenced and UI colors adapt accordingly.",
+      "scenario": "Toggle mute and color‑blind mode via UI controls and verify audio is silenced and UI colors adapt accordingly",
       "description": "Checks settings persistence and visual/audio accessibility features.",
       "criticalPath": false,
       "storyId": "N/A",
       "acIndex": -1
     },
     {
-      "scenario": "Load the game while offline (service worker serving cached assets) and confirm gameplay functions without network.",
+      "scenario": "Load the game while offline (service worker serving cached assets) and confirm gameplay functions without network",
       "description": "Ensures offline‑first capability and asset cache reliability.",
       "criticalPath": true,
       "storyId": "N/A",
       "acIndex": -1
     },
     {
-      "scenario": "Navigate the entire UI using only keyboard (Tab/Enter/Arrow keys) and verify visible focus indicators on all interactive elements.",
+      "scenario": "Navigate the entire UI using only keyboard (Tab/Enter/Arrow keys) and verify visible focus indicators on all interactive elements",
       "description": "Validates keyboard‑only navigation and accessibility focus states.",
       "criticalPath": false,
       "storyId": "N/A",
