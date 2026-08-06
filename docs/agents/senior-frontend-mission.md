@@ -9,6 +9,11 @@
 
 ## Files Changed
 
+- src/render/canvas.ts (formatting and minor refactor)
+- src/service-worker.ts (removed @ts-ignore and cleaned up typings)
+- vite.config.ts (converted to ESM import for workbox config)
+- workbox-config.js (removed unsupported swSrc property)
+- tests/canvas-manager.test.ts (added unit tests for CanvasManager)
 
 ## Notes
 
