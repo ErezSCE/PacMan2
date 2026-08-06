@@ -2,3 +2,5 @@
 .conventions/
 .worktrees/
 # ─── /AgenticDevTeam ───
+node_modules/
+dist/
