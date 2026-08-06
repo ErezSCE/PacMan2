@@ -40,10 +40,12 @@ export class HighScoreStore {
               autoIncrement: true,
             });
             store.createIndex("by-score", "score");
+            // Seed default scores on first creation
+            // Note: cannot use 'this' here; will seed after open resolves
           }
         },
       }).then(async (db) => {
-        // Seed if empty
+        // If the store was just created, it will be empty; seed defaults only if empty and not previously seeded
         const count = await db.count("high_scores");
         if (count === 0) {
           await this.seedInitialData(db);
@@ -155,12 +157,19 @@ export class HighScoreStore {
   public async clearAll(): Promise<void> {
     try {
       const db = await this.getDB();
+      const count = await db.count("high_scores");
       await db.clear("high_scores");
-      // Reseed defaults after clearing to maintain initial top‑10
-      await this.seedInitialData(db);
+      // Reseed defaults only if the store was originally empty (no scores existed before clear)
+      if (count === 0) {
+        await this.seedInitialData(db);
+      }
     } catch (e) {
-      // Fallback: reset memory store to defaults
-      await this.seedMemoryDefaults();
+      // Fallback: reset memory store to defaults only if it was originally empty
+      const wasEmpty = this.memoryStore.length === 0;
+      this.memoryStore = [];
+      if (wasEmpty) {
+        await this.seedMemoryDefaults();
+      }
     }
   }
 }
