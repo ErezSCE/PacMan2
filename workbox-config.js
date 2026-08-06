@@ -9,8 +9,7 @@ module.exports = {
   ],
   // Do not cache-bust URLs that already contain a hash.
   dontCacheBustURLsMatching: /-\w{8}\./,
-  // Service worker source file.
-  swSrc: 'src/service-worker.ts',
+
   // Destination for the generated service worker.
   swDest: 'dist/service-worker.js',
   // Runtime caching rules.
