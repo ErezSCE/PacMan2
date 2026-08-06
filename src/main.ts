@@ -1,4 +1,6 @@
 import { renderMaze, type Maze } from './maze';
+import { CanvasManager } from './render/canvas';
+import OnscreenControls from './ui/onscreen-controls';
 import { AudioManager } from './services/audio-manager';
 import { AssetLoader } from './services/asset-loader';
 import MuteToggle from './ui/mute-toggle';
