@@ -1,7 +1,7 @@
 /**
  * HighScoreStore provides CRUD operations for the top‑10 high scores using IndexedDB via the idb library.
  * It falls back to an in‑memory store when IndexedDB is unavailable (e.g., during tests).
- * The store is seeded with initial data on first launch if empty.
+ * The store is seeded with default scores on first use unless `clearAll` has been called.
  */
 
 import { openDB, IDBPDatabase } from "idb";
@@ -17,8 +17,12 @@ export interface HighScore {
 export class HighScoreStore {
   private static instance: HighScoreStore;
   private dbPromise: Promise<IDBPDatabase<unknown>> | null = null;
-  // In‑memory fallback store
+  // Flag to ensure initial seeding occurs only once
+  private seeded: boolean = false;
+  // In‑memory fallback store used when IndexedDB is unavailable (e.g., in test environment)
   private memoryStore: HighScore[] = [];
+  // Flag indicating that `clearAll` was called; prevents automatic reseeding of defaults
+  private cleared: boolean = false;
 
   private constructor() {}
 
@@ -40,23 +44,14 @@ export class HighScoreStore {
               autoIncrement: true,
             });
             store.createIndex("by-score", "score");
-            // Seed default scores on first creation
-            // Note: cannot use 'this' here; will seed after open resolves
           }
         },
-      }).then(async (db) => {
-        // If the store was just created, it will be empty; seed defaults only if empty and not previously seeded
-        const count = await db.count("high_scores");
-        if (count === 0) {
-          await this.seedInitialData(db);
-        }
-        return db;
       });
     }
     return this.dbPromise;
   }
 
-  /** Seed the store with 10 default scores when it is empty. */
+  /** Seed the store with the default top‑10 scores. */
   private async seedInitialData(db: IDBPDatabase<unknown>) {
     const defaultScores: Omit<HighScore, "id">[] = [
       { initials: "AAA", score: 10000, created_at: Date.now(), updated_at: Date.now() },
@@ -78,7 +73,7 @@ export class HighScoreStore {
     await tx.done;
   }
 
-  /** Seed the in‑memory fallback store with default scores. */
+  /** Seed the in‑memory fallback store with the same default scores. */
   private async seedMemoryDefaults() {
     const defaultScores: Omit<HighScore, "id">[] = [
       { initials: "AAA", score: 10000, created_at: Date.now(), updated_at: Date.now() },
@@ -99,11 +94,18 @@ export class HighScoreStore {
   private async getAll(): Promise<HighScore[]> {
     try {
       const db = await this.getDB();
-      const all = await db.getAll("high_scores");
-      return (all as HighScore[]).sort((a, b) => b.score - a.score);
-    } catch (e) {
-      // Fallback to memory store; seed defaults if empty
-      if (this.memoryStore.length === 0) {
+      const all = (await db.getAll("high_scores")) as HighScore[];
+      if (all.length === 0 && !this.cleared && !this.seeded) {
+        // Seed defaults only once
+        await this.seedInitialData(db);
+        this.seeded = true;
+        const seeded = (await db.getAll("high_scores")) as HighScore[];
+        return seeded.sort((a, b) => b.score - a.score);
+      }
+      return all.sort((a, b) => b.score - a.score);
+    } catch {
+      // IndexedDB unavailable – use in‑memory fallback
+      if (this.memoryStore.length === 0 && !this.cleared) {
         await this.seedMemoryDefaults();
       }
       return [...this.memoryStore].sort((a, b) => b.score - a.score);
@@ -116,7 +118,7 @@ export class HighScoreStore {
     return all.slice(0, 10);
   }
 
-  /** Add a new score. If the list exceeds 10 entries, the lowest scores are retained but UI can filter top‑10. */
+  /** Add a new score. */
   public async addScore(initials: string, score: number): Promise<void> {
     const now = Date.now();
     const record: Omit<HighScore, "id"> = {
@@ -128,24 +130,21 @@ export class HighScoreStore {
     try {
       const db = await this.getDB();
       await db.add("high_scores", record);
-      // Ensure only top 10 scores are kept
-      const all = await db.getAll("high_scores");
-      const sorted = (all as HighScore[]).sort((a, b) => b.score - a.score);
+      // Keep only top 10 scores
+      const all = (await db.getAll("high_scores")) as HighScore[];
+      const sorted = all.sort((a, b) => b.score - a.score);
       if (sorted.length > 10) {
-        const toDelete = sorted.slice(10);
         const tx = db.transaction("high_scores", "readwrite");
         const store = tx.objectStore("high_scores");
-        for (const entry of toDelete) {
-          if (entry.id !== undefined) {
-            await store.delete(entry.id);
-          }
+        for (let i = 10; i < sorted.length; i++) {
+          const id = sorted[i].id;
+          if (id !== undefined) await store.delete(id);
         }
         await tx.done;
       }
-    } catch (e) {
-      // Fallback to memory store
+    } catch {
+      // Fallback to in‑memory store
       this.memoryStore.push({ ...record, id: this.memoryStore.length + 1 });
-      // Trim memory store to top 10
       this.memoryStore.sort((a, b) => b.score - a.score);
       if (this.memoryStore.length > 10) {
         this.memoryStore = this.memoryStore.slice(0, 10);
@@ -157,19 +156,15 @@ export class HighScoreStore {
   public async clearAll(): Promise<void> {
     try {
       const db = await this.getDB();
-      const count = await db.count("high_scores");
       await db.clear("high_scores");
-      // Reseed defaults only if the store was originally empty (no scores existed before clear)
-      if (count === 0) {
-        await this.seedInitialData(db);
-      }
-    } catch (e) {
-      // Fallback: reset memory store to defaults only if it was originally empty
-      const wasEmpty = this.memoryStore.length === 0;
-      this.memoryStore = [];
-      if (wasEmpty) {
-        await this.seedMemoryDefaults();
-      }
+      // Set cleared flag only after successful DB clear
+      this.cleared = true;
+    } catch {
+      // ignore DB errors – fallback will still clear memory store
     }
+    // Also clear the in‑memory fallback store
+    this.memoryStore = [];
+    // Reset seeded flag so that future getAll can attempt seeding if needed
+    this.seeded = false;
   }
 }
