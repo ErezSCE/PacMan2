@@ -1,7 +1,7 @@
 # QA Lead — Test Plan
 
 **Agent**: qa-lead  
-**Generated**: 2026-08-06T09:37:09.928Z
+**Generated**: 2026-08-06T09:59:32.263Z
 
 ---
 
@@ -46,7 +46,7 @@
       "acIndex": -1
     },
     {
-      "target": "ServiceWorker registration (serviceWorker.ts)",
+      "target": "serviceWorker.ts",
       "description": "Ensure Workbox registration, cache versioning, and update handling work as expected.",
       "framework": "Jest",
       "storyId": "N/A",
