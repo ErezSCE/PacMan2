@@ -73,6 +73,13 @@ export class Ghost {
   // Home (ghost house) position – used for eye‑return animation.
   private readonly homePosition: Point;
 
+  /**
+   * Protected accessor for subclasses to retrieve the ghost's home position.
+   */
+  protected getHomePosition(): Point {
+    return this.homePosition;
+  }
+
   constructor(startPos: Point, homePos: Point) {
     this.position = { ...startPos };
     this.homePosition = { ...homePos };
