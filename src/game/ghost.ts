@@ -53,7 +53,12 @@ export class Ghost {
   public direction: Direction = "left";
 
   // Base speed in pixels per second (arbitrary, can be tuned by the engine)
-  private readonly baseSpeed: number = 100;
+  private speed: number = 100;
+
+  /** Set the base speed (used for scaling per level). */
+  public setSpeed(newSpeed: number): void {
+    this.speed = newSpeed;
+  }
 
   // Internal timers (in ms)
   private modeTimer: number; // time left for current chase/scatter mode
@@ -137,12 +142,12 @@ export class Ghost {
    */
   public getSpeed(): number {
     if (this.state === GhostState.Frightened) {
-      return this.baseSpeed * 0.5; // 50 % speed when frightened
+      return this.speed * 0.5; // 50 % speed when frightened
     }
     if (this.state === GhostState.Eaten) {
-      return this.baseSpeed * 1.2; // slightly faster when returning home (optional)
+      return this.speed * 1.2; // slightly faster when returning home (optional)
     }
-    return this.baseSpeed;
+    return this.speed;
   }
 
   /**
