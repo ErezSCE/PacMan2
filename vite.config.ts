@@ -9,7 +9,7 @@ export default defineConfig({
       apply: 'build',
       async closeBundle() {
         const { generateSW } = await import('workbox-build');
-        const config = require(path.resolve(__dirname, 'workbox-config.js'));
+        const config = (await import(path.resolve(__dirname, 'workbox-config.js'))).default;
         await generateSW(config);
         console.log('Service worker generated.');
       },
