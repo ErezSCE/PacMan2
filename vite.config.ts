@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
-import { generateSW } from 'workbox-build';
+
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 export default defineConfig({
   plugins: [
@@ -9,7 +10,9 @@ export default defineConfig({
       apply: 'build',
       async closeBundle() {
         const { generateSW } = await import('workbox-build');
-        const config = (await import(path.resolve(__dirname, 'workbox-config.js'))).default;
+        const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const config = (await import(path.resolve(__dirname, 'workbox-config.js'))).default;
         await generateSW(config);
         console.log('Service worker generated.');
       },

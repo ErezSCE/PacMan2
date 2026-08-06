@@ -24,7 +24,7 @@ describe('CanvasManager', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 300 });
     Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 200 });
     // Trigger resize handler manually
-    (manager as any).handleResize();
+    window.dispatchEvent(new Event('resize'));
     const expectedScale = 375 / 640; // min width constraint
     expect(manager.getScale()).toBeCloseTo(expectedScale);
     expect(canvas.style.width).toBe(`${640 * expectedScale}px`);
