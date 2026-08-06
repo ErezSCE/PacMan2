@@ -17,6 +17,8 @@ export interface HighScore {
 export class HighScoreStore {
   private static instance: HighScoreStore;
   private dbPromise: Promise<IDBPDatabase<unknown>> | null = null;
+  // Flag to ensure initial seeding occurs only once
+  private seeded: boolean = false;
   // In‑memory fallback store used when IndexedDB is unavailable (e.g., in test environment)
   private memoryStore: HighScore[] = [];
   // Flag indicating that `clearAll` was called; prevents automatic reseeding of defaults
@@ -93,9 +95,10 @@ export class HighScoreStore {
     try {
       const db = await this.getDB();
       const all = (await db.getAll("high_scores")) as HighScore[];
-      if (all.length === 0 && !this.cleared) {
-        // First use – seed defaults
+      if (all.length === 0 && !this.cleared && !this.seeded) {
+        // Seed defaults only once
         await this.seedInitialData(db);
+        this.seeded = true;
         const seeded = (await db.getAll("high_scores")) as HighScore[];
         return seeded.sort((a, b) => b.score - a.score);
       }
@@ -151,14 +154,17 @@ export class HighScoreStore {
 
   /** Clear all stored scores. */
   public async clearAll(): Promise<void> {
-    this.cleared = true;
     try {
       const db = await this.getDB();
       await db.clear("high_scores");
+      // Set cleared flag only after successful DB clear
+      this.cleared = true;
     } catch {
       // ignore DB errors – fallback will still clear memory store
     }
     // Also clear the in‑memory fallback store
     this.memoryStore = [];
+    // Reset seeded flag so that future getAll can attempt seeding if needed
+    this.seeded = false;
   }
 }
