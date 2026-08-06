@@ -14,6 +14,7 @@ export function initTouchInput(onDirection: (dir: Direction) => void): () => voi
   const threshold = 30; // minimum pixels to consider a swipe
 
   const downHandler = (e: PointerEvent) => {
+    e.preventDefault();
     // Only consider primary pointer (touch) interactions
     if (e.isPrimary) {
       startX = e.clientX;
